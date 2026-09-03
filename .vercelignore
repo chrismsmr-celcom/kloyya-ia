@@ -1,0 +1,11 @@
+.env
+.git
+.github
+*.md
+scripts/
+sql/
+frontend-bridge/
+__pycache__/
+*.pyc
+dockerfile.txt
+docker-compose.yml
