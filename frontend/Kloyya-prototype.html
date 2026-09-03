@@ -417,14 +417,14 @@ class Component extends DCLogic {
 </script>
 
 <script>
-// Initialisation Supabase (Les variables {{ }} sont à remplacer par ton moteur de template ou Vite)
+// Initialiser Supabase avec vos vraies valeurs
 window.supabase = window.supabase.createClient(
-  "{{ SUPABASE_URL }}",      
-  "{{ SUPABASE_ANON_KEY }}"  
+  "https://pcqkrdmzolhmldmultad.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjcWtyZG16b2xobWxkbXVsdGFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNTcyNDcsImV4cCI6MjA5OTYzMzI0N30.kpmHpKxep63OvCthD9xaeGLNyp_0jtx5DZt7ftTE7kc"                 // Remplacez par votre anon public key
 );
 
-// URL de l'API Backend (s'assure que le frontend pointe vers le bon endpoint)
-window.KLOYYA_API_BASE = "{{ API_BASE_URL || window.location.origin }}";
+// URL de l'API Backend (assurez-vous qu'elle pointe vers votre backend)
+window.KLOYYA_API_BASE = "https://votre-backend.com"; // Ou window.location.origin si le backend est sur le même domaine
 </script>
 
 </body>
