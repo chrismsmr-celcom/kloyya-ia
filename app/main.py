@@ -19,17 +19,10 @@ def create_app() -> FastAPI:
         description="Backend sur mesure pour app.kloyya.com",
     )
     
-    # ✅ CORS Configuration - FIXED
+    # ✅ CORS Configuration - FIXED (regex ONLY, pas les deux!)
     app.add_middleware(
         CORSMiddleware,
-        # Origines spécifiques
-        allow_origins=[
-            "https://kloyya-frontend.vercel.app",    # Production
-            "http://localhost:3000",                  # Dev local frontend
-            "http://localhost:3001",                  # Dev local backend (tests)
-        ],
-        # Ou utilise allow_origin_regex pour matcher les patterns
-        allow_origin_regex=r"https://.*\.vercel\.app",  # ← Accepte tous les *.vercel.app
+        allow_origin_regex=r"https://[a-zA-Z0-9\-]+\.vercel\.app|http://localhost:\d+",  # ✅ Vercel + localhost
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
