@@ -24,10 +24,19 @@ def create_app() -> FastAPI:
         description="Backend sur mesure pour app.kloyya.com",
     )
 
+    # Liste des origines autorisées avec fallback explicite
+    allowed_origins = [
+        getattr(settings, "FRONTEND_ORIGIN", None),  # Récupère la variable d'env ou None
+        "https://kloyya-frontend.vercel.app",        # Fallback dur en cas d'oubli de la variable d'env
+        VERCEL_REGEX                                 # Fallback regex pour tous les sous-domaines vercel
+    ]
+    
+    # Filtrer les valeurs vides, None ou fausses pour éviter les erreurs de validation FastAPI
+    allowed_origins = [origin for origin in allowed_origins if origin]
+
     app.add_middleware(
         CORSMiddleware,
-        # On utilise la variable d'env ET la regex compilée
-        allow_origins=[settings.FRONTEND_ORIGIN, VERCEL_REGEX],
+        allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
