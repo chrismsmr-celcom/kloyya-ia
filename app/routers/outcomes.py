@@ -18,7 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from sse_starlette.sse import EventSourceResponse
 
 from app.core.enums import OutcomeState
-from app.core.sse import replay_from_db, subscribe_live
+#from app.core.sse import replay_from_db, subscribe_live
 from app.deps import CurrentUser, get_current_user, get_tenant_conn, get_tenant_conn_sse
 from app.models.schemas import (
     ApproveRequest, ClarifyRequest, CreateOutcomeRequest, FindingResponseRequest,
@@ -199,11 +199,13 @@ async def start_run(
 
 
 @router.get("/{outcome_id}/stream")
-async def stream_outcome(
-    outcome_id: UUID,
-    request: Request,
-    conn: asyncpg.Connection = Depends(get_tenant_conn),
-):
+async def stream_outcome(outcome_id: UUID):
+    # SSE n'est pas supporté sur Vercel Serverless (timeout 10s)
+    # Voir README pour les alternatives (Upstash QStash, etc.)
+    raise HTTPException(
+        status_code=501, 
+        detail="SSE streaming is not supported in this Vercel serverless deployment."
+    )
     """SSE — spec §4. Honore `Last-Event-ID` pour rejouer depuis la DB avant
     de rebrancher le direct, comme demandé explicitement."""
     run = await conn.fetchrow(
