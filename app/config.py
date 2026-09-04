@@ -9,25 +9,35 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+    )
 
     # --- App ---
     ENV: str = "development"
     APP_NAME: str = "kloyya-webapp-api"
     API_BASE_URL: str = "http://localhost:8000"
-    FRONTEND_ORIGIN: str = "http://localhost:5500"  # là où tourne Kloyya-prototype.html / index.html
+    FRONTEND_ORIGIN: str = "http://localhost:5500"
     LOG_LEVEL: str = "INFO"
+
+    # --- Authentication ---
+    # TEMPORAIRE : permet de tester le produit sans Supabase Auth.
+    # Mettre AUTH_BYPASS=false dès que l'authentification réelle est prête.
+    AUTH_BYPASS: bool = False
 
     # --- Supabase (auth + Postgres + storage) ---
     SUPABASE_URL: str
     SUPABASE_ANON_KEY: str
     SUPABASE_SERVICE_ROLE_KEY: str
-    SUPABASE_JWT_SECRET: str  # pour vérifier les JWT émis par Supabase Auth
-    DATABASE_URL: str  # postgres://... (connexion directe Postgres, pooler Supabase recommandé)
+    SUPABASE_JWT_SECRET: str
+    DATABASE_URL: str
 
     # --- Composio (auth des outils / tool connections) ---
     COMPOSIO_API_KEY: str
-    COMPOSIO_REDIRECT_BASE_URL: str = "http://localhost:8000/api/connections"
+    COMPOSIO_REDIRECT_BASE_URL: str = (
+        "http://localhost:8000/api/connections"
+    )
 
     # --- LLM providers (multi-provider router via LiteLLM) ---
     OPENAI_API_KEY: Optional[str] = None
@@ -51,22 +61,22 @@ class Settings(BaseSettings):
     RAG_MIN_SIMILARITY: float = 0.72
     DOCUMENT_STORAGE_BUCKET: str = "workspace-documents"
 
-    # --- Patchright (browser automation pour les lectures sans API propre) ---
+    # --- Patchright ---
     PATCHRIGHT_HEADLESS: bool = True
     PATCHRIGHT_TIMEOUT_MS: int = 45000
 
     # --- Run engine ---
     REDIS_URL: str = "redis://localhost:6379/0"
-    RUN_WALL_CLOCK_CAP_SECONDS: int = 1200  # 20 min, cf. spec §7
+    RUN_WALL_CLOCK_CAP_SECONDS: int = 1200
     RUN_TOKEN_BUDGET: int = 400_000
     RUN_CONCURRENCY_PER_WORKSPACE: int = 2
 
-    # --- Billing (service landing, partagé ici pour les entitlements) ---
+    # --- Billing ---
     STRIPE_SECRET_KEY: Optional[str] = None
     STRIPE_WEBHOOK_SECRET: Optional[str] = None
 
-    # --- Transcription (voice input, spec webapp §9) ---
-    TRANSCRIPTION_PROVIDER: str = "openai"  # openai (whisper) par défaut
+    # --- Transcription ---
+    TRANSCRIPTION_PROVIDER: str = "openai"
 
 
 @lru_cache
