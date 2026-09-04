@@ -1,17 +1,25 @@
 import structlog
 import re
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.db.session import init_pool, close_pool  # <-- Ajouté
 from app.routers import (
     billing, connections, documents, impact, memory, onboarding, outcomes
 )
 
 log = structlog.get_logger()
-
-# Regex pour accepter n'importe quel sous-domaine vercel.app en fallback
 VERCEL_REGEX = re.compile(r"https://.*\.vercel\.app")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialisation au démarrage de la fonction serverless
+    await init_pool()
+    yield
+    # Nettoyage à l'arrêt (rarement appelé en serverless, mais bonne pratique)
+    await close_pool()
 
 def create_app() -> FastAPI:
     settings = get_settings()
@@ -19,9 +27,9 @@ def create_app() -> FastAPI:
         title="Kloyya Web App API",
         version="0.1.0",
         description="Backend sur mesure pour app.kloyya.com",
+        lifespan=lifespan,  # <-- Ajouté ici
     )
 
-    # Construction sécurisée de la liste des origines
     allowed_origins = [
         getattr(settings, "FRONTEND_ORIGIN", None),
         "https://kloyya-frontend.vercel.app",
