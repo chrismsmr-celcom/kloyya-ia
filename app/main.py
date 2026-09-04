@@ -1,15 +1,17 @@
-from contextlib import asynccontextmanager
 import structlog
 import re
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.config import get_settings
-from app.db.session import init_pool, close_pool
 from app.routers import (
     billing, connections, documents, impact, memory, onboarding, outcomes
 )
 
 log = structlog.get_logger()
+
+# Regex pour accepter n'importe quel sous-domaine vercel.app en fallback
+VERCEL_REGEX = re.compile(r"https://.*\.vercel\.app")
 
 def create_app() -> FastAPI:
     settings = get_settings()
@@ -18,18 +20,24 @@ def create_app() -> FastAPI:
         version="0.1.0",
         description="Backend sur mesure pour app.kloyya.com",
     )
-    
-    # ✅ CORS Configuration - FIXED (regex ONLY, pas les deux!)
+
+    # Construction sécurisée de la liste des origines
+    allowed_origins = [
+        getattr(settings, "FRONTEND_ORIGIN", None),
+        "https://kloyya-frontend.vercel.app",
+        VERCEL_REGEX
+    ]
+    allowed_origins = [origin for origin in allowed_origins if origin]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origin_regex=r"https://[a-zA-Z0-9\-]+\.vercel\.app|http://localhost:\d+",  # ✅ Vercel + localhost
+        allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
         expose_headers=["Last-Event-ID"],
     )
-    
-    # Include all routers
+
     app.include_router(outcomes.router)
     app.include_router(connections.router)
     app.include_router(memory.router)
