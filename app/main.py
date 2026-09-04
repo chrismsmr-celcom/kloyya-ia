@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 import structlog
+import re
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,8 +12,10 @@ from app.routers import (
 
 log = structlog.get_logger()
 
-# Pour Vercel, on veut que l'app soit initialisée au démarrage
-# Pas besoin de lifespan pour les serverless functions
+# Expression régulière pour matcher n'importe quel sous-domaine vercel.app 
+# (ex: https://kloyya-frontend.vercel.app ou https://kloyya-ia-vert.vercel.app)
+VERCEL_REGEX = re.compile(r"https://.*\.vercel\.app")
+
 def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(
@@ -23,7 +26,8 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[settings.FRONTEND_ORIGIN, "https://*.vercel.app"],
+        # On utilise la variable d'env ET la regex compilée
+        allow_origins=[settings.FRONTEND_ORIGIN, VERCEL_REGEX],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
